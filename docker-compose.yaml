@@ -1,0 +1,50 @@
+services:
+  # --- PAR A: Ubuntu + Redis (Rede Privada A) ---
+  srv-ubuntu:
+    image: ubuntu:latest
+    container_name: servidor-ubuntu
+    networks:
+      - rede-privada-a
+    tty: true # Mantém o container ligado para podermos entrar nele
+    depends_on:
+      - db-redis
+
+  db-redis:
+    image: redis:alpine
+    container_name: banco-redis
+    networks:
+      - rede-privada-a
+    volumes:
+      - vol-redis:/data
+
+  # --- PAR B: CentOS + MariaDB (Rede Privada B) ---
+  srv-centos:
+    image: centos:7
+    container_name: servidor-centos
+    networks:
+      - rede-privada-b
+    tty: true
+    depends_on:
+      - db-mariadb
+
+  db-mariadb:
+    image: mariadb:latest
+    container_name: banco-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: senha123 # Senha
+    networks:
+      - rede-privada-b
+    volumes:
+      - vol-mariadb:/var/lib/mysql
+
+# Definição das Redes Isoladas
+networks:
+  rede-privada-a:
+    driver: bridge
+  rede-privada-b:
+    driver: bridge
+
+# Definição dos Volumes para Persistência
+volumes:
+  vol-redis:
+  vol-mariadb:
